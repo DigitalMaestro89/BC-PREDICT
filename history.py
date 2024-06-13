@@ -2,9 +2,11 @@ import hmac
 import hashlib
 import json
 
+# get precious hash value from next hash
 def get_previous_hash(hash):
 	return hashlib.sha256(hash.encode()).hexdigest()
 
+# get crash value from its hash value
 def get_crash_from_hash(hash, salt):
 	hash = hmac.new(salt.encode(), bytes.fromhex(hash), hashlib.sha256).hexdigest()
 	n_bits = 52
@@ -15,9 +17,10 @@ def get_crash_from_hash(hash, salt):
 	result = int(X)
 	return max(1, result / 100)
 
+# get crash values and save it in history.json file
 def build_database(index, hash, salt):
 	# for i in range(0, 10, 1):
-	end_point = index - 3500
+	end_point = index - 100000
 	data = []
 	while index > end_point:
 		crash_value = get_crash_from_hash(hash, salt)
@@ -26,7 +29,7 @@ def build_database(index, hash, salt):
 		hash = get_previous_hash(hash)
 
 	data.reverse()
-	file = f"history{i}.json"
+	file = f"./history/history.json"
 	with open(file, "w") as file:
 		file.write(json.dumps(data, indent=2))
 	file.close()
