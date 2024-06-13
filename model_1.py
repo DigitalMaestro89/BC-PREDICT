@@ -20,7 +20,7 @@ def create_dataset(dataset, look_back=1):
 np.random.seed(5)
 
 # Load and prepare the data
-with open('./crash_history.json', 'r') as file:
+with open('./history/history.json', 'r') as file:
     data = json.load(file)
 data = np.array(data)
 
@@ -74,7 +74,8 @@ model.add(Dropout(0.5))
 model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 model.fit(trainX, trainY, epochs=1000, batch_size=100, verbose=1)
-
+# save the model
+model.save(f"./model/model_1.h5")
 # make predictions
 trainPredict = model.predict(trainX)
 testPredict = model.predict(testX)
