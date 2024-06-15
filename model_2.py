@@ -20,7 +20,7 @@ np.random.seed(5)
 print('Loading JSON...')
 
 # Load and prepare the data
-with open('./crash_history.json', 'r') as file:
+with open('./history/history.json', 'r') as file:
     data = json.load(file)
 data = np.array(data)
 
@@ -93,6 +93,9 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']
 
 # Train the model
 model.fit(trainX_resampled, trainY_resampled, epochs=220, batch_size=700, verbose=1)
+
+# Save the trained model
+model.save('model_2.h5')
 
 # Make predictions
 trainPredict = model.predict(trainX_resampled)
