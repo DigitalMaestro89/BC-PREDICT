@@ -3,11 +3,11 @@ from datetime import datetime
 import json
 import hmac
 import hashlib
+import numpy as np
 import tensorflow as tf
 from keras.src.layers import LSTM
 from keras.src.saving import load_model
 from keras.src.losses import MeanSquaredError
-from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -100,23 +100,55 @@ def load_model_by_path(path):
 
     return model
 
-# get next crash value
-def get_next_crash(history):
-    # load the model
-    model_path = "./model/model_1.h5"
-    model = load_model_by_path(model_path)
-    print(model.summary())
+# convert an array of values into a dataset matrix
+def create_dataset(dataset, look_back=1):
+    dataX= []
+    print(len(dataset))
+    for i in range(len(dataset)-look_back):
+        a = dataset[i:(i+look_back), 0]
+        dataX.append(a)
+    return np.array(dataX)
 
-    return 0
+# get next crash value
+def get_next_crash(model, history):
+    # set the threshold value
+    threshold = 30
+    # set sequence length
+    look_back = 200
+    # handle special values
+    history = np.array(history)
+    history[history > threshold] = threshold
+    data = np.array(history)
+    # reshap the data
+    data = data.reshape(-1, 1)
+    # scale the data to normalize
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    data = scaler.fit_transform(data)
+    # create the dataset to prediction
+    inputX= create_dataset(data, look_back)
+    # Reshape the input data to be [sample, time step, feature]
+    inputX = np.reshape(inputX, (inputX.shape[0], 1, inputX.shape[1]))
+    # Make predictions
+    predictions = model.predict(inputX)
+    # inverse  prediction
+    predictions = scaler.inverse_transform(predictions)
+    # get new crash value
+    prediction = predictions[-1]
+    return prediction[0]
 
 # execute when the crash event occured
-def auto_bet(latest_hash, game_id, salt):
+def auto_bet(model, latest_hash, game_id, salt):
     # get latest 200 crash values
     history = get_latest_history(latest_hash, game_id, salt)
-    next_crash = get_next_crash(history)
+    # get prediction about the next crash value
+    next_crash = get_next_crash(model, history)
+    print("Next crash value: ", next_crash)
     return 0
 
 def main() :
+    # load the model
+    model_path = "./model/model_1.h5"
+    model = load_model_by_path(model_path)
     # get the latest crash event
     latest_bet = get_history()
     print(latest_bet)
@@ -128,7 +160,7 @@ def main() :
             latest_bet = first_item
             print("Crash event occured")
             print(f"Latest crash value: {latest_bet['crash']}")
-            auto_bet(latest_bet['hash'], latest_bet['gameId'], latest_bet['salt'])            
+            auto_bet(model, latest_bet['hash'], latest_bet['gameId'], latest_bet['salt'])            
 
 
 if __name__ =="__main__":
