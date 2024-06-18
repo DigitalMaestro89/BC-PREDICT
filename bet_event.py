@@ -1,6 +1,7 @@
 import subprocess
 from datetime import datetime
 import json
+import time
 
 def get_history():
     batch_file_path = "site.bat"
@@ -24,15 +25,26 @@ def get_history():
                 "crash" : game_detail['rate']
             }
             history_array.append(new_item)
-        print(history_array)
         return history_array[0]
     except subprocess.CalledProcessError as e:
         print(f"Error executing batch file: {e}")
     
 
 def main() :
-    first_item = get_history()
-    print(first_item['gameId'])
+    latest_bet = get_history()
+    print(latest_bet)
+    while True:
+        start_time = time.time()
+        first_item = get_history()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(first_item)
+        if latest_bet['gameId'] != first_item['gameId']:
+            latest_bet = first_item
+            print("Crash event occured")
+            print(f"Time: {execution_time}")
+            # print(latest_bet)
+            print(f"Latest crash value: {latest_bet['crash']}")
 
 if __name__ =="__main__":
     main()
