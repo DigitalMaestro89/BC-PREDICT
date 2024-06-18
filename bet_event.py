@@ -1,9 +1,15 @@
 import subprocess
 from datetime import datetime
 import json
-import time
 import hmac
 import hashlib
+import tensorflow as tf
+from keras.src.layers import LSTM
+from keras.src.saving import load_model
+from keras.src.losses import MeanSquaredError
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
+
 
 def get_history():
     batch_file_path = "site.bat"
@@ -49,7 +55,7 @@ def get_previous_hash(hash):
 
 # get latest 200 crash history for predicting
 def get_latest_history(latest_hash, game_id, salt):
-    end_point = game_id - 200
+    end_point = game_id - 210
     # get crash history
     crash_history = []
     while game_id > end_point:
@@ -61,11 +67,53 @@ def get_latest_history(latest_hash, game_id, salt):
     crash_history = crash_history[::-1]
     return crash_history
 
+
+# Load saved models from other environment
+def load_model_by_path(path):
+    # Define a custom MSE function
+    @tf.keras.utils.register_keras_serializable()
+    def custom_mse(y_true, y_pred):
+        return tf.reduce_mean(tf.square(y_true - y_pred), axis=-1)
+    # You can also use the built-in MeanSquaredError class
+    @tf.keras.utils.register_keras_serializable()
+    class CustomMeanSquaredError(MeanSquaredError):
+        def __init__(self, name="mse", **kwargs):
+            super().__init__(name=name, **kwargs)
+    class CustomLSTM(LSTM):
+        def __init__(self, *args, **kwargs):
+            # Remove the unrecognized 'time_major' argument
+            kwargs.pop('time_major', None)
+            super(CustomLSTM, self).__init__(*args, **kwargs)
+    # Register the custom LSTM class
+    tf.keras.utils.get_custom_objects()['CustomLSTM'] = CustomLSTM
+    # Define the custom objects dictionary
+    custom_objects = {
+        'LSTM': CustomLSTM,
+        'Orthogonal': tf.keras.initializers.Orthogonal,  # Ensure Orthogonal initializer is registered
+        'mse': custom_mse,  # Register the custom MSE function
+        'CustomMeanSquaredError': CustomMeanSquaredError  # Register the custom MSE class
+    }
+    # Load the model with custom objects
+    model = load_model(path, custom_objects=custom_objects, compile=True)
+    # Show model's properties
+    # model.summary()
+
+    return model
+
+# get next crash value
+def get_next_crash(history):
+    # load the model
+    model_path = "./model/model_1.h5"
+    model = load_model_by_path(model_path)
+    print(model.summary())
+
+    return 0
+
 # execute when the crash event occured
 def auto_bet(latest_hash, game_id, salt):
     # get latest 200 crash values
     history = get_latest_history(latest_hash, game_id, salt)
-    print(len(history))
+    next_crash = get_next_crash(history)
     return 0
 
 def main() :
