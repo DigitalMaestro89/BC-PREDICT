@@ -65,7 +65,7 @@ def get_latest_history(latest_hash, game_id, salt):
 def auto_bet(latest_hash, game_id, salt):
     # get latest 200 crash values
     history = get_latest_history(latest_hash, game_id, salt)
-    
+    print(len(history))
     return 0
 
 def main() :
