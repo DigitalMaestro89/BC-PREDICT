@@ -142,11 +142,8 @@ def auto_bet(model, latest_hash, game_id, salt):
     history = get_latest_history(latest_hash, game_id, salt)
     # get prediction about the next crash value
     next_crash = get_next_crash(model, history)
-    if next_crash >= 10:
-        print("Greater than 10")
-    else:
-        print("Less than 10")
-    return next_crash >= 10
+    print("The next crash value: ", next_crash)
+    return 0
 
 def main() :
     # load the model
