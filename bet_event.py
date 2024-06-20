@@ -96,8 +96,6 @@ def load_model_by_path(path):
     # Load the model with custom objects
     model = load_model(path, custom_objects=custom_objects, compile=True)
     # Show model's properties
-    # model.summary()
-
     return model
 
 # convert an array of values into a dataset matrix
@@ -160,8 +158,7 @@ def main() :
             latest_bet = first_item
             print("Crash event occured")
             print(f"Latest crash value: {latest_bet['crash']}")
-            auto_bet(model, latest_bet['hash'], latest_bet['gameId'], latest_bet['salt'])            
-
+            auto_bet(model, latest_bet['hash'], latest_bet['gameId'], latest_bet['salt'])
 
 if __name__ =="__main__":
     main()
