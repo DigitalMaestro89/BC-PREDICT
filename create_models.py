@@ -103,16 +103,12 @@ if __name__ == "__main__":
 
             # Create the Plotly figure
             fig = go.Figure()
-
             # Plot baseline dataset
             fig.add_trace(go.Scatter(y=scaler.inverse_transform(dataset).flatten(), mode='lines', name='Actual Values', ))
-
             # Plot train predictions
             fig.add_trace(go.Scatter(y=trainPredictPlot.flatten(), mode='lines', name='Train Predictions', ))
-
             # Plot test predictions
             fig.add_trace(go.Scatter(y=testPredictPlot.flatten(), mode='lines', name='Test Predictions', line=dict(color='red')))
-
             # Update layout
             fig.update_layout(
                 title='BC Crash Values Prediction',
@@ -122,10 +118,8 @@ if __name__ == "__main__":
                 xaxis={'rangeslider': {'visible': True}, 'type': 'linear'},
                 margin=dict(l=20, r=20, t=40, b=20)
             )
-
             # Display the figure
             fig.show()
-
             # Output test prices and predictions for additional clarity
             print('testPrices:')
             if scaler:
@@ -141,7 +135,7 @@ if __name__ == "__main__":
 
             # Test model case 
             result = []
-            for threshold_value in range(2, threshold):
+            for threshold_value in range(10, threshold):
                 print(f"=======Performance of the prediction for greater than: {threshold_value} ========")
                 correct_predictions = np.sum((actual >= threshold_value) & (predicted >= threshold_value))
                 wrong_predictions = np.sum((actual >= threshold_value) & (predicted < threshold_value))
