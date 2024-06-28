@@ -159,7 +159,7 @@ def get_data():
     history = get_latest_history(first_item['hash'], first_item['gameId'], first_item['salt'])
     # get prediction about the next crash value
     next_crash = get_next_crash(model, history)
-    print(next_crash)
+    # print(next_crash)
     data = {
         'crash': f'{next_crash}',
         'status': 'success'
